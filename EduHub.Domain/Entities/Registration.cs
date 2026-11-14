@@ -1,4 +1,4 @@
-namespace EduHub.Domain.Entities;
+﻿namespace EduHub.Domain.Entities;
 
 public class Registration
 {
@@ -36,7 +36,7 @@ public class Registration
     public void Confirm()
     {
         if (Status != RegistrationStatus.Pending)
-            throw new InvalidOperationException("Only a Pending registration can be confirmed.");
+            throw new InvalidOperationException("Only Pending registration can be confirmed.");
 
         Status = RegistrationStatus.Confirmed;
     }
@@ -44,7 +44,7 @@ public class Registration
     public void Cancel()
     {
         if (Status == RegistrationStatus.Cancelled)
-            throw new InvalidOperationException("Registration is already cancelled.");
+            throw new InvalidOperationException("Cancelled registration cannot be changed.");
 
         Status = RegistrationStatus.Cancelled;
     }
