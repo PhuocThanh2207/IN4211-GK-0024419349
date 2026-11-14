@@ -19,3 +19,14 @@ Bốn trụ cột của lập trình hướng đối tượng (OOP):
 Hai vấn đề làm lớp `Member` trong Đoạn mã 1 chưa đóng gói:
 1. Các thuộc tính `Id` và `Email` có `public set`, cho phép bên ngoài tự ý gán giá trị không hợp lệ trực tiếp (ví dụ `m.Email = "abc"` không có ký tự `@`).
 2. Constructor `public Member() { }` để công khai và không có tham số kiểm tra, cho phép tạo đối tượng `Member` ở trạng thái rỗng/không hợp lệ ngay từ đầu.
+
+## Câu 2a
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending : Create(memberId, eventId)
+    Pending --> Confirmed : Confirm()
+    Pending --> Cancelled : Cancel()
+    Confirmed --> Cancelled : Cancel()
+    Cancelled --> [*]
+```
