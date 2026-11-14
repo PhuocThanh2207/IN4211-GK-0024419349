@@ -30,3 +30,20 @@ stateDiagram-v2
     Confirmed --> Cancelled : Cancel()
     Cancelled --> [*]
 ```
+
+
+## Câu 3a
+
+Ba nguyên lý SOLID mà lớp `EventService` (Đoạn mã 2) vi phạm:
+
+1. **SRP (Single Responsibility Principle - Nguyên lý đơn trách nhiệm):**
+   - **Số dòng vi phạm:** Dòng 6–14 (dòng 6–7 kiểm tra hợp lệ dữ liệu, dòng 8–9 lưu cơ sở dữ liệu SQL, dòng 10 ghi log ra tệp, dòng 11–14 gửi thông báo).
+   - **Giải thích:** Lớp `EventService` đảm nhận quá nhiều trách nhiệm khác nhau trong cùng một phương thức, dẫn đến có nhiều lý do khiến lớp này phải sửa đổi.
+
+2. **OCP (Open/Closed Principle - Nguyên lý đóng/mở):**
+   - **Số dòng vi phạm:** Dòng 11–14 (`if (channel == "email") ... else if (channel == "sms") ...`).
+   - **Giải thích:** Khi muốn thêm một kênh gửi thông báo mới (ví dụ Push, Zalo), ta phải sửa trực tiếp mã nguồn bên trong lớp `EventService` thay vì chỉ mở rộng bằng lớp mới.
+
+3. **DIP (Dependency Inversion Principle - Nguyên lý đảo ngược phụ thuộc):**
+   - **Số dòng vi phạm:** Dòng 8 (`new SqlConnection(...)`), dòng 12 (`new EmailSender()`), dòng 14 (`new SmsSender()`).
+   - **Giải thích:** Lớp cấp cao (`EventService`) đang phụ thuộc trực tiếp và tự khởi tạo (`new`) các lớp cài đặt cụ thể cấp thấp thay vì phụ thuộc vào các interface trừu tượng (`IEventRepository`, `INotificationService`).
