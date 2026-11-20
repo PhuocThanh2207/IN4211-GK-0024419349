@@ -47,3 +47,46 @@ Ba nguyên lý SOLID mà lớp `EventService` (Đoạn mã 2) vi phạm:
 3. **DIP (Dependency Inversion Principle - Nguyên lý đảo ngược phụ thuộc):**
    - **Số dòng vi phạm:** Dòng 8 (`new SqlConnection(...)`), dòng 12 (`new EmailSender()`), dòng 14 (`new SmsSender()`).
    - **Giải thích:** Lớp cấp cao (`EventService`) đang phụ thuộc trực tiếp và tự khởi tạo (`new`) các lớp cài đặt cụ thể cấp thấp thay vì phụ thuộc vào các interface trừu tượng (`IEventRepository`, `INotificationService`).
+
+   
+## Câu 4b
+
+- **Phân biệt `git merge` và `git rebase`:**
+  - `git merge`: Kết hợp nhánh nguồn vào nhánh đích bằng cách tạo một *merge commit* mới, giữ nguyên lịch sử phân nhánh và thứ tự thời gian thực của các commit.
+  - `git rebase`: Di chuyển (viết lại) các commit của nhánh hiện tại đặt nối tiếp lên trên đỉnh của nhánh đích, tạo ra lịch sử commit thẳng hàng (tuyến tính), không tạo merge commit nhưng làm thay đổi mã hash của các commit.
+- **Khi nào không nên dùng `rebase`:** Không nên dùng `git rebase` trên các nhánh công khai/dùng chung (như `main`, `develop` hoặc nhánh đã push lên remote mà có người khác cùng làm việc) vì việc viết lại lịch sử sẽ gây xung đột lịch sử với máy của các thành viên khác.
+
+## Câu 5a
+
+Sơ đồ bốn lớp của Clean Architecture, chiều phụ thuộc và vị trí các lớp:
+
+```mermaid
+flowchart TD
+    API["EduHub.API (Presentation)<br/>Chứa: EventsController"]
+    INFRA["EduHub.Infrastructure<br/>Chứa: InMemoryEventRepository"]
+    APP["EduHub.Application<br/>Chứa: EventService"]
+    DOMAIN["EduHub.Domain<br/>Chứa: Event, IEventRepository"]
+
+    API --> APP
+    API --> INFRA
+    INFRA --> APP
+    INFRA --> DOMAIN
+    APP --> DOMAIN
+```
+
+- **`EduHub.Domain`:** Chứa `Event`, `IEventRepository`.
+- **`EduHub.Application`:** Chứa `EventService`.
+- **`EduHub.Infrastructure`:** Chứa `InMemoryEventRepository`.
+- **`EduHub.API`:** Chứa `EventsController`.
+
+## Câu 5b
+
+Project `EduHub.Domain` không được tham chiếu tới `EduHub.Infrastructure` vì theo quy tắc phụ thuộc (Dependency Rule) của Clean Architecture, các tầng bên ngoài phải phụ thuộc hướng vào tầng trung tâm (`Domain`). `Domain` chứa các quy tắc nghiệp vụ cốt lõi nên phải hoàn toàn độc lập với chi tiết kỹ thuật bên ngoài (cơ sở dữ liệu, file, email/SMS ở tầng `Infrastructure`). Nhờ đó, khi thay đổi công nghệ ở `Infrastructure`, tầng `Domain` không bị ảnh hưởng và dễ dàng kiểm thử độc lập (Unit Test).
+
+## Câu 5d
+
+- **Nguyên nhân:** Khi đăng ký `InMemoryEventRepository` bằng `AddScoped`, DI Container sẽ tạo một đối tượng `InMemoryEventRepository` **mới cho mỗi HTTP request**. Do `List<Event>` bên trong là biến thành viên thông thường (không `static`), dữ liệu được thêm ở request `POST` chỉ nằm trong instance của request đó và bị giải phóng ngay khi request `POST` kết thúc. Khi gọi request `GET` tiếp theo, một instance `InMemoryEventRepository` mới hoàn toàn được tạo ra với `List<Event>` rỗng.
+- **Cách đã đăng ký để tránh lỗi:** Đăng ký `InMemoryEventRepository` với vòng đời **`AddSingleton`** trong `Program.cs` để dùng chung duy nhất một instance xuyên suốt thời gian chạy của ứng dụng:
+  ```csharp
+  builder.Services.AddSingleton<IEventRepository, InMemoryEventRepository>();
+  ```
